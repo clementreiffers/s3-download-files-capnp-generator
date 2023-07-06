@@ -23,10 +23,14 @@ async fn main() -> Result<(), Error> {
     };
 
     let client: S3Client = create_s3_client(&s3_params);
-    let object_key = &s3_params.s3_object_key;
-    if let Some(contents) = list_files(&client, &object_key, &s3_params).await.contents {
-        for object in contents {
-            download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
+
+    let links = s3_params.s3_object_key.split(",");
+
+    for link in links {
+        if let Some(contents) = list_files(&client, link, &s3_params).await.contents {
+            for object in contents {
+                download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
+            }
         }
     }
     Ok(())
