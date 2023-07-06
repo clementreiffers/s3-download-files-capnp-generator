@@ -1,6 +1,6 @@
 use crate::args::S3Params;
 use rusoto_core::credential::{AwsCredentials, StaticProvider};
-use rusoto_core::{HttpClient, Region};
+use rusoto_core::{Client, HttpClient, Region};
 use rusoto_s3::{GetObjectRequest, ListObjectsV2Output, ListObjectsV2Request, S3Client, S3};
 use tokio::io::AsyncReadExt;
 
@@ -13,20 +13,19 @@ fn get_parent_directory(path: &String) -> String {
 }
 
 pub fn create_s3_client(s3_params: &S3Params) -> S3Client {
-    let credentials: AwsCredentials =
-        AwsCredentials::new(s3_params.s3_access_key, s3_params.s3_secret_key, None, None);
-    let provider: StaticProvider = StaticProvider::from(credentials);
-
     let region: Region = Region::Custom {
         name: s3_params.s3_region.parse().unwrap(),
         endpoint: s3_params.s3_endpoint.parse().unwrap(),
     };
-    let dispatcher = HttpClient::new().expect("Failed to create request dispatcher");
-
-    S3Client::new_with(dispatcher, provider, region)
+    S3Client::new(region)
 }
 
-pub async fn download_files<'a>(client: &S3Client, object_key: &String, s3_params: &S3Params<'a>) {
+pub async fn download_files<'a>(
+    destination: &str,
+    client: &S3Client,
+    object_key: &String,
+    s3_params: &S3Params<'a>,
+) {
     // Download each file individually using its object key
     let get_request = GetObjectRequest {
         bucket: s3_params.s3_bucket_name.to_string(),
@@ -43,7 +42,7 @@ pub async fn download_files<'a>(client: &S3Client, object_key: &String, s3_param
             .read_to_end(&mut buf)
             .await
             .unwrap();
-        let destination = format!("download/{}", object_key);
+        let destination = format!("{}/{}", destination, object_key);
         std::fs::create_dir_all(get_parent_directory(&destination))
             .expect("failed to create all dir");
         std::fs::write(destination, buf).unwrap();
@@ -64,10 +63,21 @@ pub async fn list_files<'a>(
     client.list_objects_v2(list_request).await.unwrap()
 }
 
-pub async fn download_dir<'a>(client: &S3Client, link: &str, s3_params: &S3Params<'a>) {
+pub async fn download_dir<'a>(
+    destination: &str,
+    client: &S3Client,
+    link: &str,
+    s3_params: &S3Params<'a>,
+) {
     if let Some(contents) = list_files(&client, link, &s3_params).await.contents {
         for object in contents {
-            download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
+            download_files(
+                destination,
+                &client,
+                &object.key.as_ref().unwrap(),
+                &s3_params,
+            )
+            .await;
         }
     }
 }

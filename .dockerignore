@@ -1,0 +1,6 @@
+download
+target
+*.capnp
+*.js
+*.wasm
+*.mjs

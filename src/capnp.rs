@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
+use std::fs;
 
 fn get_parent_directory(file_path: &str) -> String {
     let mut components: Vec<&str> = file_path.split('/').collect();

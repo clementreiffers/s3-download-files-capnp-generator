@@ -20,11 +20,9 @@ async fn main() -> Result<(), Error> {
 
     let s3_params = S3Params {
         s3_endpoint: &*args.s3_endpoint,
-        s3_secret_key: &*args.s3_secret_key,
-        s3_access_key: &*args.s3_access_key,
-        s3_region: &*args.s3_region,
         s3_bucket_name: &*args.s3_bucket_name,
         s3_object_key: &*args.s3_object_key,
+        s3_region: &*args.s3_region,
     };
 
     let client: S3Client = create_s3_client(&s3_params);
@@ -32,9 +30,9 @@ async fn main() -> Result<(), Error> {
     let links = s3_params.s3_object_key.split(",");
 
     for link in links {
-        download_dir(&client, link, &s3_params).await;
+        download_dir(&args.destination, &client, link, &s3_params).await;
     }
-    let config: String = create_config(&args.capnp_destination);
+    let config: String = create_config(&args.destination);
     std::fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
 
     Ok(())
