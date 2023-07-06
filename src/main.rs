@@ -77,6 +77,12 @@ fn manage_worker_module(path: &str) -> String {
         false => set_js_module(&path),
     }
 }
+fn format_modules(modules: Vec<String>) -> String {
+    format!(
+        "modules = [ {} ], compatibilityDate = \"2023-02-28\"",
+        modules.join(",")
+    )
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -103,16 +109,35 @@ async fn main() -> Result<(), Error> {
 
     let sorted_files = sort_files(list_files(folder_path));
 
-    let workers: Vec<String> = Vec::new();
-
+    let mut workers: Vec<String> = Vec::new();
     for file in sorted_files {
         let mut modules = Vec::new();
         for path in file {
             modules.push(manage_worker_module(&path));
         }
-        let modules = format!("modules = [ {} ],", modules.join(","));
-        println!("new module: {}", modules)
+        let modules = format_modules(modules);
+        workers.push(modules);
     }
+    let mut services = Vec::new();
+    let mut sockets = Vec::new();
+    let mut total_worker = format!("");
+    for (index, worker) in workers.iter().enumerate() {
+        let worker_name = format!("w{}", index);
+        total_worker =
+            total_worker + &format!("const {} :Workerd.Worker = ( {} );", worker_name, worker);
+        services.push(format!(
+            "(name = \"{}\", worker=.{})",
+            worker_name, worker_name
+        ));
+        sockets.push(format!(
+            "(name=\"http\", address = \"*:{}\", http = (), service = \"{}\")",
+            8080 + index,
+            worker_name
+        ));
+    }
+    let config =
+        format!("using Workerd = import \"workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}", services.join(","), sockets.join(","), total_worker);
+    std::fs::write("config.capnp", config.as_bytes()).unwrap();
 
     Ok(())
 }
