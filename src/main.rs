@@ -63,7 +63,7 @@ fn set_wasm_module(path: &str) -> String {
 }
 
 fn set_js_module(path: &str) -> String {
-    format!("( name = \"entrypoint\", wasm = embed \"{}\" )", path)
+    format!("( name = \"entrypoint\", esModule = embed \"{}\" )", path)
 }
 
 fn is_wasm_file(path: &str) -> bool {
@@ -126,7 +126,7 @@ async fn main() -> Result<(), Error> {
         total_worker =
             total_worker + &format!("const {} :Workerd.Worker = ( {} );", worker_name, worker);
         services.push(format!(
-            "(name = \"{}\", worker=.{})",
+            "(name = \"{}\", worker = .{})",
             worker_name, worker_name
         ));
         sockets.push(format!(
@@ -136,7 +136,7 @@ async fn main() -> Result<(), Error> {
         ));
     }
     let config =
-        format!("using Workerd = import \"workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}", services.join(","), sockets.join(","), total_worker);
+        format!("using Workerd = import \"/workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}", services.join(","), sockets.join(","), total_worker);
     std::fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
 
     Ok(())
