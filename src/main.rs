@@ -123,25 +123,39 @@ async fn main() -> Result<(), Error> {
         let modules = format_modules(modules);
         workers.push(modules);
     }
-    let mut services = Vec::new();
-    let mut sockets = Vec::new();
-    let mut total_worker = format!("");
-    for (index, worker) in workers.iter().enumerate() {
-        let worker_name = format!("w{}", index);
-        total_worker =
-            total_worker + &format!("const {} :Workerd.Worker = ( {} );", worker_name, worker);
-        services.push(format!(
-            "(name = \"{}\", worker = .{})",
-            worker_name, worker_name
-        ));
-        sockets.push(format!(
-            "(name=\"http\", address = \"*:{}\", http = (), service = \"{}\")",
-            8080 + index,
-            worker_name
-        ));
-    }
-    let config =
-        format!("using Workerd = import \"/workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}", services.join(","), sockets.join(","), total_worker);
+
+    let (services, sockets): (Vec<String>, Vec<String>) = workers
+        .iter()
+        .enumerate()
+        .map(|(index, _)| {
+            let worker_name = format!("w{}", index);
+            let service = format!("(name = \"{}\", worker = .{})", worker_name, worker_name);
+            let socket = format!(
+                "( name= \"http\", address = \"*:{}\", http = (), service = \"{}\" )",
+                8080 + index,
+                worker_name
+            );
+            (service, socket)
+        })
+        .unzip();
+
+    let total_worker = workers
+        .iter()
+        .enumerate()
+        .map(|(index, worker)| {
+            let worker_name = format!("w{}", index);
+            format!("const {} :Workerd.Worker = ( {} );", worker_name, worker)
+        })
+        .collect::<Vec<_>>()
+        .join("");
+
+    let config = format!(
+        "using Workerd = import \"/workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}",
+        services.join(","),
+        sockets.join(","),
+        total_worker
+    );
+
     std::fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
 
     Ok(())
