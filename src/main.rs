@@ -22,6 +22,8 @@ struct Args {
     s3_secret_key: String,
     #[arg(long)]
     s3_region: String,
+    #[arg(long)]
+    s3_object_key: String,
 }
 
 #[derive(Debug)]
@@ -31,6 +33,7 @@ struct S3Params<'a> {
     s3_access_key: &'a str,
     s3_secret_key: &'a str,
     s3_region: &'a str,
+    s3_object_key: &'a str,
 }
 
 fn get_parent_directory(path: &String) -> String {
@@ -103,11 +106,11 @@ async fn main() -> Result<(), Error> {
         s3_access_key: &*args.s3_access_key,
         s3_region: &*args.s3_region,
         s3_bucket_name: &*args.s3_bucket_name,
+        s3_object_key: &*args.s3_object_key,
     };
 
-    let object_key = "398803b74bcdb1b454434669bc634190/wasm-worker/1688628480";
     let client: S3Client = create_s3_client(&s3_params);
-
+    let object_key = &s3_params.s3_object_key;
     if let Some(contents) = list_files(&client, &object_key, &s3_params).await.contents {
         for object in contents {
             download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
