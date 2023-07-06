@@ -5,13 +5,38 @@ mod s3;
 use crate::args::{Args, S3Params};
 use std::collections::HashMap;
 
-use crate::capnp::sort_files;
 use crate::s3::{create_s3_client, download_dir};
 use clap::Parser;
+use regex::Regex;
 use rusoto_s3::S3Client;
 use std::fmt::Error;
 use std::fs;
 use tokio;
+
+fn get_parent_directory(file_path: &str) -> String {
+    let mut components: Vec<&str> = file_path.split('/').collect();
+    components.pop(); // Remove the file name or last component
+
+    components.join("/")
+}
+
+fn get_filename(file_path: &str) -> &str {
+    file_path.split("/").last().expect("failed to get filename")
+}
+
+pub(crate) fn sort_files(list: Vec<String>) -> Vec<Vec<String>> {
+    let mut hashmap: HashMap<String, Vec<String>> = HashMap::new();
+
+    for file_path in list.iter() {
+        let parent_directory = get_parent_directory(file_path);
+        hashmap
+            .entry(parent_directory)
+            .or_insert(Vec::new())
+            .push(file_path.to_owned());
+    }
+
+    hashmap.into_iter().map(|(_, v)| v).collect()
+}
 
 fn list_files(path: &str) -> Vec<String> {
     let entries = fs::read_dir(path).expect("failed to read dir");
@@ -21,14 +46,36 @@ fn list_files(path: &str) -> Vec<String> {
         let path = entry.expect("failed to get entry").path();
 
         if path.is_dir() {
-            // Récursivement appeler `list_files` pour les sous-répertoires
             files.extend(list_files(&path.to_string_lossy()));
         } else {
-            // Afficher le chemin du fichier
             files.push(path.display().to_string())
         }
     }
     files
+}
+
+fn set_wasm_module(path: &str) -> String {
+    format!(
+        "( name = \"./{}\", wasm = embed \"{}\" )",
+        get_filename(&path),
+        path
+    )
+}
+
+fn set_js_module(path: &str) -> String {
+    format!("( name = \"entrypoint\", wasm = embed \"{}\" )", path)
+}
+
+fn is_wasm_file(path: &str) -> bool {
+    let regex = Regex::new(r"\.wasm$").unwrap();
+    regex.is_match(&path)
+}
+
+fn manage_worker_module(path: &str) -> String {
+    match is_wasm_file(&path) {
+        true => set_wasm_module(&path),
+        false => set_js_module(&path),
+    }
 }
 
 #[tokio::main]
@@ -48,18 +95,23 @@ async fn main() -> Result<(), Error> {
 
     let links = s3_params.s3_object_key.split(",");
 
-    for link in links {
-        download_dir(&client, link, &s3_params).await;
-    }
+    // for link in links {
+    //     download_dir(&client, link, &s3_params).await;
+    // }
 
     let folder_path = "download";
 
-    let list = list_files(folder_path);
+    let sorted_files = sort_files(list_files(folder_path));
 
-    let sorted_files = sort_files(list);
+    let workers: Vec<String> = Vec::new();
 
-    for files in sorted_files {
-        println!("{:?}", files);
+    for file in sorted_files {
+        let mut modules = Vec::new();
+        for path in file {
+            modules.push(manage_worker_module(&path));
+        }
+        let modules = format!("modules = [ {} ],", modules.join(","));
+        println!("new module: {}", modules)
     }
 
     Ok(())
