@@ -15,6 +15,8 @@ pub struct Args {
     pub(crate) s3_region: String,
     #[arg(long)]
     pub(crate) s3_object_key: String,
+    #[arg(long)]
+    pub(crate) capnp_destination: String,
 }
 
 #[derive(Debug)]
