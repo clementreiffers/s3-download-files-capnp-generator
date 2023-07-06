@@ -101,9 +101,9 @@ async fn main() -> Result<(), Error> {
 
     let links = s3_params.s3_object_key.split(",");
 
-    // for link in links {
-    //     download_dir(&client, link, &s3_params).await;
-    // }
+    for link in links {
+        download_dir(&client, link, &s3_params).await;
+    }
 
     let folder_path = "download";
 
@@ -137,7 +137,7 @@ async fn main() -> Result<(), Error> {
     }
     let config =
         format!("using Workerd = import \"workerd/workerd.capnp\"; const config :Workerd.Config = ( services = [{}], sockets = [{}], ); {}", services.join(","), sockets.join(","), total_worker);
-    std::fs::write("config.capnp", config.as_bytes()).unwrap();
+    std::fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
 
     Ok(())
 }
