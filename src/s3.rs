@@ -63,3 +63,11 @@ pub async fn list_files<'a>(
 
     client.list_objects_v2(list_request).await.unwrap()
 }
+
+pub async fn download_dir<'a>(client: &S3Client, link: &str, s3_params: &S3Params<'a>) {
+    if let Some(contents) = list_files(&client, link, &s3_params).await.contents {
+        for object in contents {
+            download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
+        }
+    }
+}

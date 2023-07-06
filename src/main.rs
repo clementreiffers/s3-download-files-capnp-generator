@@ -3,7 +3,7 @@ mod s3;
 
 use crate::args::{Args, S3Params};
 
-use crate::s3::{create_s3_client, download_files, list_files};
+use crate::s3::{create_s3_client, download_dir};
 use clap::Parser;
 use rusoto_s3::S3Client;
 use std::fmt::Error;
@@ -27,11 +27,7 @@ async fn main() -> Result<(), Error> {
     let links = s3_params.s3_object_key.split(",");
 
     for link in links {
-        if let Some(contents) = list_files(&client, link, &s3_params).await.contents {
-            for object in contents {
-                download_files(&client, &object.key.as_ref().unwrap(), &s3_params).await;
-            }
-        }
+        download_dir(&client, link, &s3_params).await;
     }
     Ok(())
 }
