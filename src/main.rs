@@ -77,10 +77,10 @@ fn manage_worker_module(path: &str) -> String {
         false => set_js_module(&path),
     }
 }
-fn format_modules(modules: Vec<String>) -> String {
+fn format_modules(modules: String) -> String {
     format!(
         "modules = [ {} ], compatibilityDate = \"2023-02-28\"",
-        modules.join(",")
+        modules
     )
 }
 
@@ -111,9 +111,14 @@ async fn main() -> Result<(), Error> {
 
     let mut workers: Vec<String> = Vec::new();
     for file in sorted_files {
-        let mut modules = Vec::new();
+        let mut modules = format!("");
         for path in file {
-            modules.push(manage_worker_module(&path));
+            let module_part = manage_worker_module(&path);
+            let regex = Regex::new(r"entrypoint").unwrap();
+            modules = match regex.is_match(&module_part) {
+                true => format!("{},{}", module_part, modules),
+                false => format!("{}{}", modules, module_part),
+            }
         }
         let modules = format_modules(modules);
         workers.push(modules);
