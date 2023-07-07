@@ -55,8 +55,6 @@ jobs:
           id: create_release
           tag_name: ${{ github.run_number }}
           release_name: Release ${{ github.run_number }}
-          body: |
-            i'm the first release published
           draft: false
           prerelease: false
 
@@ -75,7 +73,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: release-linux.tar.gz
-          asset_name: s3-download-files-capnp-generator-v${{ github.run_number }}.tar.gz
+          asset_name: release-linux-v${{ github.run_number }}.tar.gz
           asset_content_type: application/zip
 
       - name: Download macos artifact content
@@ -93,6 +91,6 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: release-macos.tar.gz
-          asset_name: s3-download-files-capnp-generator-v${{ github.run_number }}.tar.gz
+          asset_name: release-macos-v${{ github.run_number }}.tar.gz
           asset_content_type: application/zip
 
