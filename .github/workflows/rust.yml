@@ -73,7 +73,7 @@ jobs:
         run: sudo apt update && sudo apt install -y gcc-mingw-w64
 
       - name: build
-        run: cargo build --target x86_64-pc-windows-gnu
+        run: cargo build --target x86_64-pc-windows-gnu --release
 
       - name: upload artifact release
         uses: actions/upload-artifact@v2

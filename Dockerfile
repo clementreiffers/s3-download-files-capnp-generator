@@ -8,4 +8,4 @@ RUN unzip release-linux-v21.zip
 
 FROM ubuntu AS runner
 
-COPY --from=downloader ./s3-download-files-capnp-generator /usr/local/bin
+COPY --from=downloader ./s3-download-files-capnp-generator ./
