@@ -13,37 +13,78 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: installing toolchains
-      run: |
-        rustup toolchain install stable-x86_64-apple-darwin
+      - name: build
+        run: cargo build --release
 
-    - name: build-ubuntu
-      run: cargo build --release
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-ubuntu
+          path: ./target/release/s3-download-files-capnp-generator
 
-    - name: build-macos
-      run: cargo build --target stable-x86_64-apple-darwin --release
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
 
-    - name: upload ubuntu artifact release
-      uses: actions/upload-artifact@v2
-      with:
-        name: artifact-ubuntu
-        path: ./target/release/s3-download-files-capnp-generator
+      - name: build
+        run: cargo build --release
 
-    - name: upload macos artifact release
-      uses: actions/upload-artifact@v2
-      with:
-        name: artifact-macos-intel
-        path: ./target/stable-x86_64-apple-darwin/release/s3-download-files-capnp-generator
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-macos
+          path: ./target/release/s3-download-files-capnp-generator
+
+  build-alpine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: installing toolchains
+        run: rustup target add x86_64-unknown-linux-musl
+
+      - name: installing musl-tools
+        run: sudo apt update && sudo apt install -y musl-tools
+
+      - name: build
+        run: cargo build --target=x86_64-unknown-linux-musl --release
+
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-alpine
+          path: ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator
+
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: installing toolchains
+        run: rustup target add x86_64-pc-windows-gnu
+
+      - name: installing mingw
+        run: sudo apt update && sudo apt install -y gcc-mingw-w64
+
+      - name: build
+        run: cargo build --target x86_64-pc-windows-gnu
+
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-windows
+          path: ./target/x86_64-pc-windows-gnu/release/s3-download-files-capnp-generator.exe
 
   release-project:
     name: Release Project
     runs-on: ubuntu-latest
-    needs: [ build ]
+    needs: [ build-macos, build-ubuntu, build-alpine, build-windows ]
     steps:
       - name: Create Release
         id: create_release
@@ -78,18 +119,54 @@ jobs:
       - name: Download macos artifact content
         uses: actions/download-artifact@v2
         with:
-          name: artifact-macos-intel
+          name: artifact-macos
       - name: Archive macos release
         uses: thedoctor0/zip-release@master
         with:
-          filename: release-macos-intel.zip
+          filename: release-macos.zip
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-macos-intel.zip
-          asset_name: release-macos-intel-v${{ github.run_number }}.zip
+          asset_path: release-macos.zip
+          asset_name: release-macos-v${{ github.run_number }}.zip
+          asset_content_type: application/zip
+
+      - name: Download alpine artifact content
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact-alpine
+      - name: Archive alpine release
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: release-alpine.zip
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-alpine.zip
+          asset_name: release-alpine-v${{ github.run_number }}.zip
+          asset_content_type: application/zip
+
+      - name: Download windows artifact content
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact-windows
+      - name: Archive windows release
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: release-windows.zip
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release-windows.zip
+          asset_name: release-windows-v${{ github.run_number }}.zip
           asset_content_type: application/zip
 
