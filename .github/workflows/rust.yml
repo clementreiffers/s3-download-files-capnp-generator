@@ -83,7 +83,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: artifact-ubuntu
-          asset_name: linux-s3-download-capnp-generator.elf
+          asset_name: ubuntu-s3-download-capnp-generator.elf
           asset_content_type: application/octet-stream
 
       - name: Download macos artifact content
