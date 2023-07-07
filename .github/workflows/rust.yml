@@ -27,24 +27,24 @@ jobs:
         name: artifact-ubuntu
         path: ./target/release/s3-download-files-capnp-generator
 
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: build
-        run: cargo build --release
-
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-macos
-          path: ./target/release/s3-download-files-capnp-generator
-
+#  build-macos:
+#    runs-on: macos-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#
+#      - name: build
+#        run: cargo build --release
+#
+#      - name: upload artifact release
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: artifact-macos
+#          path: ./target/release/s3-download-files-capnp-generator
+#
   release-project:
     name: Release Project
     runs-on: ubuntu-latest
-    needs: [ build-macos, build-ubuntu ]
+    needs: [ build-ubuntu ]
     steps:
       - name: Create Release
         id: create_release
@@ -73,25 +73,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create-new-release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: release-linux.tar.gz
           asset_name: s3-download-files-capnp-generator-v${{ github.run_number }}.tar.gz
           asset_content_type: application/zip
 
-      - name: Download macos artifact content
-        uses: actions/download-artifact@v2
-        with:
-          name: artifact-macos
-      - name: Archive macos release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-macos.tar.gz
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-macos.tar.gz
-          asset_name: s3-download-files-capnp-generator-v${{ github.run_number }}.tar.gz
-          asset_content_type: application/zip
+#      - name: Download macos artifact content
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: artifact-macos
+#      - name: Archive macos release
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          filename: release-macos.tar.gz
+#      - name: Upload release asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: release-macos.tar.gz
+#          asset_name: s3-download-files-capnp-generator-v${{ github.run_number }}.tar.gz
+#          asset_content_type: application/zip
+#
