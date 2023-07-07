@@ -9,3 +9,5 @@ RUN unzip release-alpine-v24.zip
 FROM alpine AS runner
 
 COPY --from=downloader ./s3-download-files-capnp-generator ./
+
+RUN chmod +x ./s3-download-files-capnp-generator
