@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.3.11", features = ["derive"] }
+openssl = { version = "0.10.55", features = ["vendored"] }
 regex = "1.9.0"
 rusoto_core = "0.48.0"
 rusoto_s3 = "0.48.0"

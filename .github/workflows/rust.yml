@@ -13,38 +13,37 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-ubuntu:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: build
+    - name: installing toolchains
+      run: |
+        rustup toolchain install stable-x86_64-apple-darwin
+
+    - name: build-ubuntu
       run: cargo build --release
 
-    - name: upload artifact release
+    - name: build-macos
+      run: cargo build --target stable-x86_64-apple-darwin --release
+
+    - name: upload ubuntu artifact release
       uses: actions/upload-artifact@v2
       with:
         name: artifact-ubuntu
         path: ./target/release/s3-download-files-capnp-generator
 
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: build
-        run: cargo build --release
-
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-macos
-          path: ./target/release/s3-download-files-capnp-generator
+    - name: upload macos artifact release
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifact-macos-intel
+        path: ./target/stable-x86_64-apple-darwin/release/s3-download-files-capnp-generator
 
   release-project:
     name: Release Project
     runs-on: ubuntu-latest
-    needs: [ build-macos, build-ubuntu ]
+    needs: [ build ]
     steps:
       - name: Create Release
         id: create_release
@@ -79,18 +78,18 @@ jobs:
       - name: Download macos artifact content
         uses: actions/download-artifact@v2
         with:
-          name: artifact-macos
+          name: artifact-macos-intel
       - name: Archive macos release
         uses: thedoctor0/zip-release@master
         with:
-          filename: release-macos.zip
+          filename: release-macos-intel.zip
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-macos.zip
-          asset_name: release-macos-v${{ github.run_number }}.zip
+          asset_path: release-macos-intel.zip
+          asset_name: release-macos-intel-v${{ github.run_number }}.zip
           asset_content_type: application/zip
 

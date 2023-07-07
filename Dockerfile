@@ -1,9 +1,11 @@
-FROM rust AS builder
+FROM ubuntu AS downloader
 
-COPY ./ ./
+RUN apt-get update && apt-get install -y curl unzip
 
-RUN cargo build --release
+RUN curl -O -L linkhere
 
-FROM rust AS runner
+RUN unzip filehere
 
-COPY --from=builder ./target/release/s3-download-files-capnp-generator /usr/local/bin
+FROM ubuntu AS runner
+
+COPY --from=downloader ./fake-cf-api ./
