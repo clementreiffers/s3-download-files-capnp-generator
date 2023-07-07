@@ -62,35 +62,35 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: artifact-ubuntu
-      - name: Archive ubuntu release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-linux.tar.gz
+#      - name: Archive ubuntu release
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          filename: release-linux.tar.gz
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-linux.tar.gz
-          asset_name: release-linux-v${{ github.run_number }}.tar.gz
+          asset_path: artifact-linux
+          asset_name: linux-s3-download-capnp-generator.elf
           asset_content_type: application/zip
 
       - name: Download macos artifact content
         uses: actions/download-artifact@v2
         with:
           name: artifact-macos
-      - name: Archive macos release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-macos.tar.gz
+#      - name: Archive macos release
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          filename: release-macos.tar.gz
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-macos.tar.gz
-          asset_name: release-macos-v${{ github.run_number }}.tar.gz
+          asset_path: artifact-macos
+          asset_name: linux-s3-download-capnp-generator.elf
           asset_content_type: application/zip
 
