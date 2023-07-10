@@ -35,7 +35,7 @@ async fn main() -> Result<(), Error> {
     }
     println!("files downloaded !");
 
-    let config: String = create_config(&args.destination);
+    let config: String = create_config("./");
 
     let capnp_destination = format!("{}/config.capnp", &args.destination);
     fs::write(capnp_destination, config.as_bytes()).expect("failed to write file");

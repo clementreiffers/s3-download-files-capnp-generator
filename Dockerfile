@@ -1,4 +1,4 @@
-ARG RELEASE_VERSION=29
+ARG RELEASE_VERSION=31
 
 FROM ubuntu AS downloader
 ARG RELEASE_VERSION
@@ -16,3 +16,5 @@ RUN pip install aws awscli_plugin_endpoint
 COPY --from=downloader ./s3-download-files-capnp-generator ./
 
 RUN chmod +x ./s3-download-files-capnp-generator
+
+CMD ["./s3-download-files-capnp-generator"]
