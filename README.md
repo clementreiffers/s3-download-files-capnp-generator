@@ -23,7 +23,7 @@ cargo run --
 - the field `--s3-bucket-name` concerns the name of the S3 Bucket you want.
 - the field `--s3-endpoint` concerns the endpoint of your S3 Bucket.
 - the field `--s3-region` concerns the region in which your S3 Bucket is host.
-- the field `--s3-object-key` concerns the path of the object you want to dowload
+- the field `--s3-object-key` concerns the path of the object you want to download
 - the field `destination` concerns where your file will be downloaded and where the `Cap'n'proto` will be generated.
 
 > **NOTE**
