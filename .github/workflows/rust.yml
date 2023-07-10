@@ -105,15 +105,15 @@ jobs:
       - name: Archive ubuntu release
         uses: thedoctor0/zip-release@master
         with:
-          filename: release-linux.zip
+          filename: release-ubuntu.zip
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-linux.zip
-          asset_name: release-linux-v${{ github.run_number }}.zip
+          asset_path: release-ubuntu.zip
+          asset_name: release-ubuntu-v${{ github.run_number }}.zip
           asset_content_type: application/zip
 
       - name: Download macos artifact content

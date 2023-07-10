@@ -6,7 +6,9 @@ RUN curl -O -L https://github.com/clementreiffers/s3-download-files-capnp-genera
 
 RUN unzip release-alpine-v24.zip
 
-FROM alpine AS runner
+FROM python:alpine AS runner
+
+RUN pip install aws awscli_plugin_endpoint
 
 COPY --from=downloader ./s3-download-files-capnp-generator ./
 

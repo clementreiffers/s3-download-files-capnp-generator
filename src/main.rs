@@ -12,6 +12,7 @@ use regex::Regex;
 use rusoto_s3::S3Client;
 use std::fmt::Error;
 use std::fs;
+use std::process::exit;
 use tokio;
 
 #[tokio::main]
@@ -33,7 +34,7 @@ async fn main() -> Result<(), Error> {
         download_dir(&args.destination, &client, link, &s3_params).await;
     }
     let config: String = create_config(&args.destination);
-    std::fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
+    fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
 
     Ok(())
 }
