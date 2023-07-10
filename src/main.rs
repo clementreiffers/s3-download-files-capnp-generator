@@ -10,7 +10,7 @@ use crate::s3::{create_s3_client, download_dir};
 use clap::Parser;
 use regex::Regex;
 use rusoto_s3::S3Client;
-use std::fmt::Error;
+use std::fmt::{format, Error};
 use std::fs;
 use std::process::exit;
 use tokio;
@@ -34,7 +34,9 @@ async fn main() -> Result<(), Error> {
         download_dir(&args.destination, &client, link, &s3_params).await;
     }
     let config: String = create_config(&args.destination);
-    fs::write("config.capnp", config.as_bytes()).expect("failed to write file");
+
+    let capnp_destination = format!("{}/config.capnp", &args.destination);
+    fs::write(capnp_destination, config.as_bytes()).expect("failed to write file");
 
     Ok(())
 }
