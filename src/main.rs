@@ -33,10 +33,14 @@ async fn main() -> Result<(), Error> {
     for link in links {
         download_dir(&args.destination, &client, link, &s3_params).await;
     }
+    println!("files downloaded !");
+
     let config: String = create_config(&args.destination);
 
     let capnp_destination = format!("{}/config.capnp", &args.destination);
     fs::write(capnp_destination, config.as_bytes()).expect("failed to write file");
+
+    println!("capnp generated!");
 
     Ok(())
 }
