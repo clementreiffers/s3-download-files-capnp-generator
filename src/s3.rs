@@ -25,7 +25,7 @@ pub async fn download_files<'a>(
     client: &S3Client,
     object_key: &String,
     s3_params: &S3Params<'a>,
-) {
+) -> String {
     // Download each file individually using its object key
     let get_request = GetObjectRequest {
         bucket: s3_params.s3_bucket_name.to_string(),
@@ -35,18 +35,17 @@ pub async fn download_files<'a>(
 
     let get_response = client.get_object(get_request).await.unwrap();
 
-    if let Some(output) = get_response.body {
-        let mut buf = vec![];
-        output
-            .into_async_read()
-            .read_to_end(&mut buf)
-            .await
-            .unwrap();
-        let destination = format!("{}/{}", destination, object_key);
-        std::fs::create_dir_all(get_parent_directory(&destination))
-            .expect("failed to create all dir");
-        std::fs::write(destination, buf).unwrap();
-    }
+    let output = get_response.body.expect("failed to get body");
+    let mut buf = vec![];
+    output
+        .into_async_read()
+        .read_to_end(&mut buf)
+        .await
+        .unwrap();
+    let destination = format!("{}/{}", destination, object_key);
+    std::fs::create_dir_all(get_parent_directory(&destination)).expect("failed to create all dir");
+    std::fs::write(&destination, buf).unwrap();
+    destination
 }
 
 pub async fn list_files<'a>(
@@ -68,16 +67,23 @@ pub async fn download_dir<'a>(
     client: &S3Client,
     link: &str,
     s3_params: &S3Params<'a>,
-) {
-    if let Some(contents) = list_files(&client, link, &s3_params).await.contents {
-        for object in contents {
+) -> Vec<String> {
+    let mut files_downloaded: Vec<String> = Vec::new();
+    let contents = list_files(&client, link, &s3_params)
+        .await
+        .contents
+        .expect("failed to get contents");
+
+    for object in contents {
+        files_downloaded.push(
             download_files(
                 destination,
                 &client,
                 &object.key.as_ref().unwrap(),
                 &s3_params,
             )
-            .await;
-        }
+            .await,
+        );
     }
+    files_downloaded
 }

@@ -30,12 +30,13 @@ async fn main() -> Result<(), Error> {
 
     let links = s3_params.s3_object_key.split(",");
 
+    let mut files_downloaded: Vec<Vec<String>> = Vec::new();
     for link in links {
-        download_dir(&args.destination, &client, link, &s3_params).await;
+        files_downloaded.push(download_dir(&args.destination, &client, link, &s3_params).await);
     }
     println!("files downloaded !");
 
-    let config: String = create_config("./");
+    let config: String = create_config(files_downloaded);
 
     let capnp_destination = format!("{}/config.capnp", &args.destination);
     fs::write(capnp_destination, config.as_bytes()).expect("failed to write file");
