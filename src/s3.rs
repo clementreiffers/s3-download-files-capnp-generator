@@ -45,7 +45,7 @@ pub async fn download_files<'a>(
     let destination = format!("{}/{}", destination, object_key);
     std::fs::create_dir_all(get_parent_directory(&destination)).expect("failed to create all dir");
     std::fs::write(&destination, buf).unwrap();
-    destination
+    object_key.to_string()
 }
 
 pub async fn list_files<'a>(
