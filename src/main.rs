@@ -40,7 +40,7 @@ async fn main() -> Result<(), Error> {
     let capnp_destination = format!("{}/config.capnp", &args.destination);
     fs::write(capnp_destination, config.as_bytes()).expect("failed to write file");
 
-    println!("capnp generated!");
+    println!("capnp generated !");
 
     Ok(())
 }
