@@ -17,74 +17,68 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: build
         run: cargo build --release
-
+      - name: move executable to root
+        run: mv ./target/release/s3-download-files-capnp-generator ./ubuntu
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:
           name: artifact-ubuntu
-          path: ./target/release/s3-download-files-capnp-generator
-
+          path: ubuntu
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: build
         run: cargo build --release
-
+      - name: move executable to root
+        run: mv ./target/release/s3-download-files-capnp-generator ./macos
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:
           name: artifact-macos
-          path: ./target/release/s3-download-files-capnp-generator
+          path: macos
 
   build-alpine:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: installing toolchains
         run: rustup target add x86_64-unknown-linux-musl
-
       - name: installing musl-tools
         run: sudo apt update && sudo apt install -y musl-tools
-
       - name: build
         run: cargo build --target=x86_64-unknown-linux-musl --release
-
+      - name: move executable to root
+        run: mv ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator ./alpine
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:
           name: artifact-alpine
-          path: ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator
+          path: alpine
 
   build-windows:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: installing toolchains
         run: rustup target add x86_64-pc-windows-gnu
-
       - name: installing mingw
         run: sudo apt update && sudo apt install -y gcc-mingw-w64
-
       - name: build
         run: cargo build --target x86_64-pc-windows-gnu --release
-
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:
           name: artifact-windows
           path: ./target/x86_64-pc-windows-gnu/release/s3-download-files-capnp-generator.exe
 
+
   release-project:
     name: Release Project
     runs-on: ubuntu-latest
-    needs: [ build-macos, build-ubuntu, build-alpine, build-windows ]
+    needs: [ build-ubuntu, build-windows, build-macos, build-alpine ]
     steps:
       - name: Create Release
         id: create_release
@@ -102,71 +96,58 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: artifact-ubuntu
-      - name: Archive ubuntu release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-ubuntu.zip
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-ubuntu.zip
-          asset_name: release-ubuntu-v${{ github.run_number }}.zip
-          asset_content_type: application/zip
-
-      - name: Download macos artifact content
-        uses: actions/download-artifact@v2
-        with:
-          name: artifact-macos
-      - name: Archive macos release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-macos.zip
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-macos.zip
-          asset_name: release-macos-v${{ github.run_number }}.zip
-          asset_content_type: application/zip
-
-      - name: Download alpine artifact content
-        uses: actions/download-artifact@v2
-        with:
-          name: artifact-alpine
-      - name: Archive alpine release
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: release-alpine.zip
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-alpine.zip
-          asset_name: release-alpine-v${{ github.run_number }}.zip
-          asset_content_type: application/zip
-
       - name: Download windows artifact content
         uses: actions/download-artifact@v2
         with:
           name: artifact-windows
-      - name: Archive windows release
-        uses: thedoctor0/zip-release@master
+      - name: Download macos artifact content
+        uses: actions/download-artifact@v2
         with:
-          filename: release-windows.zip
-      - name: Upload release asset
+          name: artifact-macos
+      - name: Download alpine artifact content
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact-alpine
+
+
+
+      - name: Upload ubuntu release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-windows.zip
-          asset_name: release-windows-v${{ github.run_number }}.zip
-          asset_content_type: application/zip
+          asset_path: ubuntu
+          asset_name: s3-download-files-capnp-generator-release-ubuntu-v${{ github.run_number }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload windows release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: s3-download-files-capnp-generator.exe
+          asset_name: s3-download-files-capnp-generator-release-windows-v${{ github.run_number }}.exe
+          asset_content_type: application/x-msdownload
+
+      - name: Upload alpine release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: alpine
+          asset_name: s3-download-files-capnp-generator-release-alpine-v${{ github.run_number }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload macos release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: macos
+          asset_name: s3-download-files-capnp-generator-release-macos-v${{ github.run_number }}
+          asset_content_type: application/octet-stream
 
