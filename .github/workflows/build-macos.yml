@@ -1,0 +1,33 @@
+name: Build MacOS
+
+on:
+    workflow_call:
+        outputs:
+            artifact:
+                description: "Executable for MacOS"
+                value: ${{ jobs.build.result.release_name }}
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: macos-latest
+    outputs:
+        release_name: ${{ steps.setReleaseName.outputs.release_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: build
+        run: cargo build --release
+      - name: move executable to root
+        run: mv ./target/release/s3-download-files-capnp-generator ./macos
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-macos
+          path: macos
+      - id: setReleaseName
+        run: echo "release_name=artifact-macos" >> $GITHUB_OUTPUT

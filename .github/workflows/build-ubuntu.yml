@@ -1,0 +1,34 @@
+name: Build Ubuntu
+
+
+on:
+    workflow_call:
+        outputs:
+            artifact:
+                description: "Executable for Ubuntu"
+                value: ${{ jobs.build.result.release_name }}
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+        release_name: ${{ steps.setReleaseName.outputs.release_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: build
+        run: cargo build --release
+      - name: move executable to root
+        run: mv ./target/release/s3-download-files-capnp-generator ./ubuntu
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-ubuntu
+          path: ubuntu
+      - id: setReleaseName
+        run: echo "release_name=artifact-ubuntu" >> $GITHUB_OUTPUT

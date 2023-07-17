@@ -1,0 +1,38 @@
+name: Build Alpine
+
+
+on:
+    workflow_call:
+        outputs:
+            artifact:
+                description: "Executable for Alpine"
+                value: ${{ jobs.build.result.release_name }}
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+        release_name: ${{ steps.setReleaseName.outputs.release_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: installing toolchains
+        run: rustup target add x86_64-unknown-linux-musl
+      - name: installing musl-tools
+        run: sudo apt update && sudo apt install -y musl-tools
+      - name: build
+        run: cargo build --target=x86_64-unknown-linux-musl --release
+      - name: move executable to root
+        run: mv ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator ./alpine
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-alpine
+          path: alpine
+      - id: setReleaseName
+        run: echo "release_name=artifact-alpine" >> $GITHUB_OUTPUT

@@ -1,79 +1,27 @@
-name: Rust
+name: Release Builds
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_call:
+    outputs:
+      build_number:
+        description: "the release build number"
+        value: ${{ github.run_number }}
 
 permissions:
   contents: write
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
   build-ubuntu:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: build
-        run: cargo build --release
-      - name: move executable to root
-        run: mv ./target/release/s3-download-files-capnp-generator ./ubuntu
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-ubuntu
-          path: ubuntu
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: build
-        run: cargo build --release
-      - name: move executable to root
-        run: mv ./target/release/s3-download-files-capnp-generator ./macos
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-macos
-          path: macos
-
-  build-alpine:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: installing toolchains
-        run: rustup target add x86_64-unknown-linux-musl
-      - name: installing musl-tools
-        run: sudo apt update && sudo apt install -y musl-tools
-      - name: build
-        run: cargo build --target=x86_64-unknown-linux-musl --release
-      - name: move executable to root
-        run: mv ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator ./alpine
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-alpine
-          path: alpine
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-ubuntu.yml@main
 
   build-windows:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: installing toolchains
-        run: rustup target add x86_64-pc-windows-gnu
-      - name: installing mingw
-        run: sudo apt update && sudo apt install -y gcc-mingw-w64
-      - name: build
-        run: cargo build --target x86_64-pc-windows-gnu --release
-      - name: upload artifact release
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-windows
-          path: ./target/x86_64-pc-windows-gnu/release/s3-download-files-capnp-generator.exe
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-windows.yml@main
 
+  build-macos:
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-macos.yml@main
+
+  build-alpine:
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-alpine.yml@main
 
   release-project:
     name: Release Project
@@ -92,24 +40,22 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Download ubuntu artifact content
-        uses: actions/download-artifact@v2
-        with:
-          name: artifact-ubuntu
-      - name: Download windows artifact content
+      - name: Download windows artifact
         uses: actions/download-artifact@v2
         with:
           name: artifact-windows
-      - name: Download macos artifact content
+      - name: Download ubuntu artifact
         uses: actions/download-artifact@v2
         with:
-          name: artifact-macos
-      - name: Download alpine artifact content
+          name: artifact-ubuntu
+      - name: Download alpine artifact
         uses: actions/download-artifact@v2
         with:
           name: artifact-alpine
-
-
+      - name: Download macos artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact-macos
 
       - name: Upload ubuntu release asset
         uses: actions/upload-release-asset@v1
@@ -150,4 +96,3 @@ jobs:
           asset_path: macos
           asset_name: s3-download-files-capnp-generator-release-macos-v${{ github.run_number }}
           asset_content_type: application/octet-stream
-

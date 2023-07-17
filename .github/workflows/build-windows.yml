@@ -1,0 +1,35 @@
+name: Build Windows
+
+
+on:
+  workflow_call:
+      outputs:
+          artifact:
+              description: "Executable for Windows"
+              value: ${{ jobs.build.result.release_name }}
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      release_name: ${{ steps.setReleaseName.outputs.release_name }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: installing toolchains
+        run: rustup target add x86_64-pc-windows-gnu
+      - name: installing mingw
+        run: sudo apt update && sudo apt install -y gcc-mingw-w64
+      - name: build
+        run: cargo build --target x86_64-pc-windows-gnu --release
+      - name: upload artifact release
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifact-windows
+          path: ./target/x86_64-pc-windows-gnu/release/s3-download-files-capnp-generator.exe
+      - id: setReleaseName
+        run: echo "release_name=artifact-windows" >> $GITHUB_OUTPUT

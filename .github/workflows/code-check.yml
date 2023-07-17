@@ -1,0 +1,29 @@
+name: Code Check
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: checking code
+        run: cargo check
+
+  checking-deps:
+    runs-on: ubuntu-latest
+    needs:
+      - check-code
+    steps:
+      - uses: actions/checkout@v3
+      - name: installing nightly
+        run: rustup toolchain install nightly
+      - name: installing udeps
+        run: cargo install cargo-udeps --locked
+      - name: checkings deps
+        run: cargo +nightly udeps --all-targets
