@@ -30,6 +30,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: artifact-windows
-          path: ./target/x86_64-pc-windows-gnu/release/s3-download-files-capnp-generator.exe
+          path: ./target/x86_64-pc-windows-gnu/release/${{ github.event.repository.name }}.exe
       - id: setReleaseName
         run: echo "release_name=artifact-windows" >> $GITHUB_OUTPUT

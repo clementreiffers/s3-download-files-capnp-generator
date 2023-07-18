@@ -12,16 +12,16 @@ permissions:
 
 jobs:
   build-ubuntu:
-    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-ubuntu.yml@main
+    uses: ${{ github.event.repository }}/.github/workflows/build-ubuntu.yml@main
 
   build-windows:
-    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-windows.yml@main
+    uses: ${{ github.event.repository }}/.github/workflows/build-windows.yml@main
 
   build-macos:
-    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-macos.yml@main
+    uses: ${{ github.event.repository }}/.github/workflows/build-macos.yml@main
 
   build-alpine:
-    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-alpine.yml@main
+    uses: ${{ github.event.repository }}/.github/workflows/build-alpine.yml@main
 
   release-project:
     name: Release Project
@@ -64,7 +64,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ubuntu
-          asset_name: s3-download-files-capnp-generator-release-ubuntu-v${{ github.run_number }}
+          asset_name: ${{ github.event.repository.name }}-release-ubuntu-v${{ github.run_number }}
           asset_content_type: application/octet-stream
 
       - name: Upload windows release asset
@@ -73,8 +73,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: s3-download-files-capnp-generator.exe
-          asset_name: s3-download-files-capnp-generator-release-windows-v${{ github.run_number }}.exe
+          asset_path: ${{ github.event.repository.name }}.exe
+          asset_name: ${{ github.event.repository.name }}-release-windows-v${{ github.run_number }}.exe
           asset_content_type: application/x-msdownload
 
       - name: Upload alpine release asset
@@ -84,7 +84,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: alpine
-          asset_name: s3-download-files-capnp-generator-release-alpine-v${{ github.run_number }}
+          asset_name: ${{ github.event.repository.name }}-release-alpine-v${{ github.run_number }}
           asset_content_type: application/octet-stream
 
       - name: Upload macos release asset
@@ -94,5 +94,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: macos
-          asset_name: s3-download-files-capnp-generator-release-macos-v${{ github.run_number }}
+          asset_name: ${{ github.event.repository.name }}-release-macos-v${{ github.run_number }}
           asset_content_type: application/octet-stream

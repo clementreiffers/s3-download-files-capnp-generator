@@ -23,7 +23,7 @@ jobs:
       - name: build
         run: cargo build --release
       - name: move executable to root
-        run: mv ./target/release/s3-download-files-capnp-generator ./macos
+        run: mv ./target/release/${{ github.event.repository.name }} ./macos
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:

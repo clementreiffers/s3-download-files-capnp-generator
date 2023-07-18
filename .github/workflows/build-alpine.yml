@@ -28,7 +28,7 @@ jobs:
       - name: build
         run: cargo build --target=x86_64-unknown-linux-musl --release
       - name: move executable to root
-        run: mv ./target/x86_64-unknown-linux-musl/release/s3-download-files-capnp-generator ./alpine
+        run: mv ./target/x86_64-unknown-linux-musl/release/${{ github.event.repository.name }} ./alpine
       - name: upload artifact release
         uses: actions/upload-artifact@v2
         with:

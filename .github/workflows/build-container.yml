@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release-build:
-    uses: clementreiffers/fake-cf-api/.github/workflows/release-build.yml@main
+    uses: ${{ github.repository}}/.github/workflows/release-build.yml@main
 
   build-push-image:
     runs-on: ubuntu-latest
@@ -34,4 +34,4 @@ jobs:
           context: .
           build-args: RELEASE_VERSION=${{ needs.release-build.outputs.build_number }}
           push: true
-          tags: clementreiffers/s3-download-files-capnp-generator:v${{ needs.release-build.outputs.build_number }}
+          tags: ${{ github.repository }}:v${{ needs.release-build.outputs.build_number }}
