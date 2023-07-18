@@ -12,16 +12,16 @@ permissions:
 
 jobs:
   build-ubuntu:
-    uses: ./build-ubuntu.yml
+    uses: ./build-ubuntu.yml@main
 
   build-windows:
-    uses: ./build-windows.yml
+    uses: ./build-windows.yml@main
 
   build-macos:
-    uses: ./build-macos.yml
+    uses: ./build-macos.yml@main
 
   build-alpine:
-    uses: ./build-alpine.yml
+    uses: ./build-alpine.yml@main
 
   release-project:
     name: Release Project
