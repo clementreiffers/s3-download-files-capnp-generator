@@ -12,16 +12,16 @@ permissions:
 
 jobs:
   build-ubuntu:
-    uses: ${{ github.repository }}/.github/workflows/build-ubuntu.yml@main
+    uses: ./build-ubuntu.yml
 
   build-windows:
-    uses: ${{ github.repository }}/.github/workflows/build-windows.yml@main
+    uses: ./build-windows.yml
 
   build-macos:
-    uses: ${{ github.repository }}/.github/workflows/build-macos.yml@main
+    uses: ./build-macos.yml
 
   build-alpine:
-    uses: ${{ github.repository }}/.github/workflows/build-alpine.yml@main
+    uses: ./build-alpine.yml
 
   release-project:
     name: Release Project
