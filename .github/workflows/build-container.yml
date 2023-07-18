@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release-build:
-    uses: ${{ github.repository}}/.github/workflows/release-build.yml@main
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/release-build.yml@main
 
   build-push-image:
     runs-on: ubuntu-latest
