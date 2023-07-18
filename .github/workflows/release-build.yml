@@ -12,16 +12,16 @@ permissions:
 
 jobs:
   build-ubuntu:
-    uses: .github/workflows/build-ubuntu.yml@main
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-ubuntu.yml@main
 
   build-windows:
-    uses: .github/workflows/build-windows.yml@main
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-windows.yml@main
 
   build-macos:
-    uses: .github/workflows/build-macos.yml@main
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-macos.yml@main
 
   build-alpine:
-    uses: .github/workflows/build-alpine.yml@main
+    uses: clementreiffers/s3-download-files-capnp-generator/.github/workflows/build-alpine.yml@main
 
   release-project:
     name: Release Project
