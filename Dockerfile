@@ -1,13 +1,9 @@
 ARG RELEASE_VERSION=35
 
-FROM ubuntu AS downloader
+FROM curlimages/curl AS downloader
 ARG RELEASE_VERSION
 
-RUN apt-get update && apt-get install -y curl unzip
-
-RUN curl -O -L https://github.com/clementreiffers/s3-download-files-capnp-generator/releases/download/${RELEASE_VERSION}/release-alpine-v${RELEASE_VERSION}.zip
-
-RUN unzip release-alpine-v${RELEASE_VERSION}.zip
+RUN curl -O -L https://github.com/clementreiffers/s3-download-files-capnp-generator/releases/download/${RELEASE_VERSION}/s3-download-files-capnp-generator-release-alpine-v${RELEASE_VERSION}
 
 FROM python:alpine AS runner
 ARG S3_REGION
