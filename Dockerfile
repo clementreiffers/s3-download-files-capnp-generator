@@ -5,6 +5,8 @@ ARG RELEASE_VERSION
 
 RUN curl -O -L https://github.com/clementreiffers/s3-download-files-capnp-generator/releases/download/${RELEASE_VERSION}/s3-download-files-capnp-generator-release-alpine-v${RELEASE_VERSION}
 
+RUN mv ./s3-download-files-capnp-generator-release-alpine-v${RELEASE_VERSION} ./s3-download-files-capnp-generator
+
 FROM python:alpine AS runner
 ARG S3_REGION
 
